@@ -1,0 +1,27 @@
+{
+  "strategy_gen_001": {
+    "risk_ratio": 0.67,
+    "entry_timing": "reactive",
+    "exit_strategy": "adaptive_trailing_stop",
+    "mutation_level": 2,
+    "fitness_score": 92.4,
+    "created_at": "2025-06-15T14:21:00Z"
+  },
+  "strategy_gen_002_selfheal": {
+    "risk_ratio": 0.53,
+    "entry_timing": "predictive",
+    "exit_strategy": "reinforced_escape",
+    "mutation_level": 3,
+    "fitness_score": 95.8,
+    "created_at": "2025-06-20T09:13:22Z"
+  },
+  "strategy_gen_003_quantum": {
+    "risk_ratio": 0.45,
+    "entry_timing": "quantum_drift",
+    "exit_strategy": "chaos_guard_exit",
+    "mutation_level": 4,
+    "fitness_score": 97.6,
+    "created_at": "2025-06-21T07:01:55Z"
+  }
+}
+
