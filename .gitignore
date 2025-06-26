@@ -1,2 +1,30 @@
 # Google App Engine generated folder
 appengine-generated/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+logs/
+trade_log.csv
+
+# Virtual Environments
+venv/
+env/
+*.env
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+
+# System files
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Python dependencies
+requirements.txt
