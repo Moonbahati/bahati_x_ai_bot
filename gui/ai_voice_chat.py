@@ -18,7 +18,11 @@ tts_engine.setProperty("rate", 165)
 
 # Initialize Speech Recognizer
 recognizer = sr.Recognizer()
-mic = sr.Microphone()
+try:
+    mic = sr.Microphone()
+except OSError:
+    mic = None
+    print("⚠️ No default input device available. Voice features will be disabled.")
 
 # Speak Function
 def speak(text):
@@ -110,5 +114,11 @@ def voice_chat_loop():
         print("-" * 60)
         time.sleep(1)
 
-if __name__ == "__main__":
+def launch_voice_ai():
+    if mic is None:
+        print("Voice features are disabled (no microphone detected).")
+        return
     voice_chat_loop()
+
+if __name__ == "__main__":
+    launch_voice_ai()

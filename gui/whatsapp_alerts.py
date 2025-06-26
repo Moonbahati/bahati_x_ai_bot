@@ -71,6 +71,11 @@ def dispatch_alerts():
     full_alert = "\n\n".join(messages)
     send_whatsapp_message(full_alert)
 
+# Initialize WhatsApp Bot
+def init_whatsapp_bot():
+    # ...your WhatsApp bot initialization code...
+    pass
+
 # Scheduler or Manual Trigger
 if __name__ == "__main__":
     print("📡 Sending hybrid AI WhatsApp alert...")

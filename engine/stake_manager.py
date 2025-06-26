@@ -5,7 +5,6 @@ from ai.intent_recognizer import recognize_intent
 from ai.auto_feedback_loop import adjust_risk_profile
 from engine.policy_enforcer import enforce_stake_limits
 from core.emotion_manager import get_risk_emotion_score
-from simulator.real_time_tester import simulate_market_impact
 
 # Logger setup
 logging.basicConfig(level=logging.INFO)

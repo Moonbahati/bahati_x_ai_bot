@@ -2,120 +2,113 @@
 
 import os
 import json
-import requests
 import threading
 from datetime import datetime
 from typing import Dict, Any, Optional
 import websocket
+import time
+import logging
+
+logger = logging.getLogger("DerivConnector")
+logging.basicConfig(level=logging.INFO)
 
 class DerivConnector:
-    def __init__(self, api_token: str):
+    def __init__(self, api_token: str, app_id: int = 1089):
         self.api_token = api_token
-        self.endpoint = "wss://ws.deriv.com/websockets/v3"
-        self.session = None
+        self.app_id = app_id
+        self.ws_url = f"wss://ws.derivws.com/websockets/v3?app_id={app_id}"
         self.trade_log = []
-        self.headers = {
-            "Authorization": f"Bearer {self.api_token}",
-            "Content-Type": "application/json"
-        }
 
-    def _send_request(self, payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        try:
-            response = requests.post("https://api.deriv.com/api/v1", json=payload, headers=self.headers)
-            if response.ok:
-                return response.json()
-            else:
-                print("⚠️ API Error:", response.status_code, response.text)
-        except Exception as e:
-            print(f"❌ Connection error: {e}")
-        return None
+    def place_trade_over_r_100(self, amount=1.0, duration=1):
+        ws = websocket.WebSocket()
+        ws.connect(self.ws_url)
 
-    def get_account_info(self) -> Optional[Dict[str, Any]]:
-        payload = {
-            "authorize": self.api_token
-        }
-        return self._send_request(payload)
+        # Step 1: Authorize
+        ws.send(json.dumps({"authorize": self.api_token}))
+        time.sleep(1)  # Wait for authorization
 
-    def get_asset_index(self) -> Optional[Dict[str, Any]]:
-        payload = {
-            "asset_index": 1
-        }
-        return self._send_request(payload)
-
-    def place_trade(self, symbol: str, duration: int, amount: float, contract_type: str = "CALL") -> Optional[Dict[str, Any]]:
-        payload = {
+        # Step 2: Send trade
+        trade_payload = {
             "buy": 1,
             "price": amount,
             "parameters": {
                 "amount": amount,
                 "basis": "stake",
-                "contract_type": contract_type,
+                "contract_type": "CALL",  # "CALL" = Over trade
                 "currency": "USD",
                 "duration": duration,
-                "duration_unit": "m",
-                "symbol": symbol
+                "duration_unit": "t",
+                "symbol": "R_100",
+                "barrier": "0"
             }
         }
-        result = self._send_request(payload)
-        if result:
-            self._log_trade(result)
-        return result
 
-    def _log_trade(self, trade_result: Dict[str, Any]):
+        ws.send(json.dumps(trade_payload))
+        logger.info("✅ Trade sent!")
+
+        # Optional: Print response
+        response = ws.recv()
+        logger.info(f"📩 Response: {response}")
+
+        ws.close()
+        self._log_trade(trade_payload, response)
+        return {"response": response}
+
+    def place_trade_under_r_100(self, amount=1.0, duration=1):
+        ws = websocket.WebSocket()
+        ws.connect(self.ws_url)
+
+        # Step 1: Authorize
+        ws.send(json.dumps({"authorize": self.api_token}))
+        time.sleep(1)  # Wait for authorization
+
+        # Step 2: Send trade
+        trade_payload = {
+            "buy": 1,
+            "price": amount,
+            "parameters": {
+                "amount": amount,
+                "basis": "stake",
+                "contract_type": "PUT",  # "PUT" = Under trade
+                "currency": "USD",
+                "duration": duration,
+                "duration_unit": "t",
+                "symbol": "R_100",
+                "barrier": "0"
+            }
+        }
+
+        ws.send(json.dumps(trade_payload))
+        logger.info("✅ Trade sent!")
+
+        # Optional: Print response
+        response = ws.recv()
+        logger.info(f"📩 Response: {response}")
+
+        ws.close()
+        self._log_trade(trade_payload, response)
+        return {"response": response}
+
+    def _log_trade(self, trade_payload: Dict[str, Any], response: str):
         timestamp = datetime.utcnow().isoformat()
         entry = {
             "timestamp": timestamp,
-            "trade": trade_result
+            "trade": trade_payload,
+            "response": response
         }
         self.trade_log.append(entry)
+        os.makedirs("logs", exist_ok=True)
         with open("logs/trade_log.csv", "a") as log_file:
-            log_file.write(f"{timestamp},{json.dumps(trade_result)}\n")
+            log_file.write(f"{timestamp},{json.dumps(trade_payload)},{response}\n")
 
-    def monitor_balance(self, interval_sec: int = 10):
-        def loop():
-            while True:
-                info = self.get_account_info()
-                if info:
-                    balance = info.get("balance", {}).get("balance")
-                    print(f"[{datetime.utcnow()}] 💰 Balance: ${balance}")
-                threading.Event().wait(interval_sec)
-        threading.Thread(target=loop, daemon=True).start()
-
-    def on_message(self, ws, message):
-        data = json.loads(message)
-        print("Received:", data)
-        # Here you can update your bot's state or Streamlit dashboard
-
-    def on_open(self, ws):
-        # Authorize
-        ws.send(json.dumps({"authorize": self.api_token}))
-        # Subscribe to ticks for R_50 (change symbol as needed)
-        ws.send(json.dumps({"ticks": "R_50"}))
-
-    def run_ws(self):
-        ws = websocket.WebSocketApp(
-            "wss://ws.deriv.com/websockets/v3",
-            on_open=self.on_open,
-            on_message=self.on_message
-        )
-        ws.run_forever()
-
+    # Add more methods as needed (account info, asset index, etc.)
 
 # Sample usage (for testing)
 if __name__ == "__main__":
-    TEST_TOKEN = os.getenv("HtInIuKmiplAINX", "your-test-token")
+    TEST_TOKEN = os.getenv("DERIV_TOKEN", "your-test-token")
     deriv = DerivConnector(api_token=TEST_TOKEN)
+    deriv.place_trade_over_r_100(amount=1.0, duration=1)
 
-    print("🔍 Fetching account info...")
-    account_info = deriv.get_account_info()
-    print(json.dumps(account_info, indent=2))
-
-    print("📊 Getting asset index...")
-    assets = deriv.get_asset_index()
-    print(json.dumps(assets, indent=2))
-
-    print("🚀 Placing sample trade...")
-    result = deriv.place_trade(symbol="R_50", duration=1, amount=1.0)
-    print(json.dumps(result, indent=2))
-
-    threading.Thread(target=deriv.run_ws).start()
+# Create a global instance for use in other modules
+DERIV_TOKEN = os.getenv("DERIV_TOKEN", "your-real-token")
+deriv_connector = DerivConnector(api_token=DERIV_TOKEN)

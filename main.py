@@ -29,9 +29,7 @@ from engine.adaptive_segmentation import AdaptiveSegmenter
 from gui.dashboard_streamlit import launch_dashboard
 from gui.ai_voice_chat import launch_voice_ai
 from gui.whatsapp_alerts import init_whatsapp_bot
-from gui.telegram_alerts import init_telegram_bot
 from gui.voice_output import voice_notify
-
 from simulator.training_simulator import start_training_simulation
 from simulator.real_time_tester import launch_real_time_testing
 from simulator.post_launch_lab import run_post_launch_lab
@@ -95,7 +93,6 @@ def init_ui_services():
     print("🟣 Launching GUI & alerts...")
     threading.Thread(target=launch_dashboard).start()
     threading.Thread(target=launch_voice_ai).start()
-    threading.Thread(target=init_telegram_bot).start()
     threading.Thread(target=init_whatsapp_bot).start()
     threading.Thread(target=init_whatsapp_voice_ai).start()
 

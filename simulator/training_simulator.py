@@ -1,5 +1,6 @@
 # simulator/training_simulator.py
 
+import json
 import logging
 import random
 import time
@@ -9,11 +10,23 @@ from engine.adaptive_segmentation import segment_behavior
 from ai.auto_feedback_loop import feedback_evaluator
 from ai.threat_prediction_ai import predict_threats
 from ai.pattern_memory import recall_patterns
-from ai.self_evolver import evolve_self
+from ai.self_evolver import evolve_self, track_change
 from engine.chaos_filter import apply_chaos_theory
+from integrations.deriv_ws_client import run_in_background
+from core.scalper_ai import ScalperAI
+from engine.market_analyzer import analyze_market_conditions
+from engine.stake_manager import StakeManager
+from engine.policy_enforcer import enforce_stake_limits
+from engine.dna_profiler import analyze_strategy_behavior
+from logs.logger_manager import log_trade
+from engine.risk_guardian import RiskGuardian
 
 logger = logging.getLogger("UltraTrainingSimulator")
 logging.basicConfig(level=logging.INFO)
+
+scalper_ai = ScalperAI()
+stake_manager = StakeManager()
+risk_guardian = RiskGuardian()
 
 class TrainingSimulator:
     def __init__(self, epochs=50, mutation_factor=0.03, historical_data=None):
@@ -79,9 +92,73 @@ class TrainingSimulator:
     def get_log(self):
         return self.training_log
 
+    def save_metrics(metrics, filename="metrics.json"):
+        with open(filename, "w") as f:
+            json.dump(metrics, f)
+
 # Optional standalone run
 if __name__ == "__main__":
     simulator = TrainingSimulator(epochs=30)
     simulator.simulate()
     log = simulator.get_log()
     print(f"🧠 Final Intelligence Snapshot (Last):\n{log[-1]}")
+
+def process_tick(tick):
+    price = tick['quote']
+    features = [price]
+
+    # 1. Predict
+    prediction = scalper_ai.predict(features)
+
+    # 2. Analyze market volatility
+    volatility = analyze_market_conditions(features)
+
+    # 3. Manage position sizing
+    position_size = stake_manager.calculate_position_size(prediction, volatility)
+
+    # 4. Enforce policy/security
+    enforce_stake_limits(prediction, position_size)
+
+    # 5. Analyze strategy behavior
+    strategy_report = analyze_strategy_behavior(scalper_ai.dna)
+
+    # 6. Learn from the prediction
+    scalper_ai.learn(features, prediction)
+
+    # 7. Log the trade
+    log_trade({
+        "price": price,
+        "features": features,
+        "prediction": prediction,
+        "position_size": position_size,
+        "volatility": volatility,
+        "strategy_report": strategy_report
+    })
+
+    # Track the change for self-evolution
+    # You may need to define 'outcome' based on your logic
+    outcome = "win"  # or "loss" or your own logic
+    track_change(features, prediction, outcome, scalper_ai.weights)
+
+    # --- Save metrics to file for dashboard ---
+    metrics = {
+        "profit_percent": 0,  # Replace with your real calculation
+        "total_trades": 0,    # Replace with your real calculation
+        "win_rate": 0,        # Replace with your real calculation
+        "strategy_impacts": [],  # Replace with your real calculation
+        "last_prediction": prediction,
+        "last_price": price,
+        "last_position_size": position_size,
+        "last_volatility": volatility,
+        "last_strategy_report": strategy_report,
+    }
+    save_metrics(metrics)
+
+    print(f"[LIVE] Price: {price} | Prediction: {prediction} | Position: {position_size} | Volatility: {volatility}")
+
+if __name__ == "__main__":
+    print("🚀 Starting Real-Time Training Simulator...")
+    run_in_background(on_tick_callback=process_tick)
+    import time
+    while True:
+        time.sleep(5)

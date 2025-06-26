@@ -4,6 +4,7 @@ import logging
 from collections import deque, defaultdict
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
+from integrations.deriv_ws_client import run_in_background, get_latest_tick
 
 # Logger setup
 logging.basicConfig(level=logging.INFO)

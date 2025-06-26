@@ -86,3 +86,7 @@ class ChatGPTConnector:
             "last_exchange": self.context[-1] if self.context else {}
         }
         return summary
+
+def ask_gpt(prompt):
+    # ...your code to call GPT...
+    pass

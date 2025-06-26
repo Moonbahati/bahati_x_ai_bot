@@ -23,6 +23,10 @@ def speak(text):
     engine.runAndWait()
 
 
+def voice_notify(message):
+    print(f"[VOICE NOTIFY]: {message}")
+
+
 class VoiceOutputManager:
     def __init__(self):
         self.voice = "en-US-JennyNeural"

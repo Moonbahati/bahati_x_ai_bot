@@ -16,6 +16,9 @@ from ai.intent_recognizer import IntentRecognizerAI
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("SelfEvolver")
 
+# State for tracking evolution
+evolution_history = []
+
 def evolve_self(*args, **kwargs):
     # TODO: Implement self-evolution logic
     return None
@@ -24,29 +27,42 @@ def initiate_self_patch(*args, **kwargs):
     # TODO: Implement self-patching logic
     pass
 
+def track_change(features, prediction, outcome, weights):
+    """
+    Track and log changes in AI behavior.
+    Optionally mutate weights if drift/anomaly detected.
+    """
+    record = {
+        "features": features,
+        "prediction": prediction,
+        "outcome": outcome,
+        "weights": weights.copy() if hasattr(weights, 'copy') else list(weights)
+    }
+    evolution_history.append(record)
+    logger.info(f"🧬 Evolution tracked: {record}")
+
+    # Example: Detect drift/anomaly and mutate weights
+    if len(evolution_history) > 10:
+        recent = evolution_history[-10:]
+        win_rate = sum(1 for r in recent if r["outcome"] == "win") / 10
+        if win_rate < 0.3:
+            logger.warning("⚠️ Performance drift detected! Mutating weights.")
+            mutate_weights(weights)
+
+def mutate_weights(weights):
+    """
+    Mutate weights slightly to escape local minima or adapt to new market.
+    """
+    noise = np.random.normal(0, 0.05, size=len(weights))
+    for i in range(len(weights)):
+        weights[i] += noise[i]
+    logger.info(f"🔄 Weights mutated: {weights}")
+
 def get_self_evolution_status():
     """
-    Returns a summary of the AI's evolution status.
-    This includes mutation stats, fitness evolution, and version lineage.
+    Return a summary of recent evolution history.
     """
-    logger.info("🧠 Fetching AI self-evolution status...")
-
-    # Simulated evolution data (can be replaced with real history logs later)
-    evolution_data = {
-        "current_generation": 3,
-        "last_mutation_type": random.choice([
-            "risk_aware_mutation",
-            "chaos_adaptive_mutation",
-            "quantum_fusion_mutation"
-        ]),
-        "fitness_progression": [87.2, 90.5, 93.4, 95.1],
-        "latest_fitness_score": 95.1,
-        "self_healing_enabled": True,
-        "evolution_engine_version": "v3.7-legendary",
-        "last_updated": datetime.datetime.utcnow().isoformat() + "Z"
-    }
-
-    return evolution_data
+    return evolution_history[-10:]
 
 def evolve_crypto_protocol(*args, **kwargs):
     # TODO: Implement logic to evolve cryptographic protocol
