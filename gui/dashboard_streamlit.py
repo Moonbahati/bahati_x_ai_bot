@@ -16,7 +16,7 @@ from simulator.real_time_tester import get_real_time_metrics
 from simulator.post_launch_lab import post_launch_feedback_summary
 from logs.logger_manager import load_security_logs
 from gui.voice_output import speak
-from integrations.deriv_ws_client import run_in_background, get_latest_tick
+from integrations.deriv_ws_client import run_in_background, get_latest_tick, get_balance
 from streamlit_autorefresh import st_autorefresh
 import json
 
@@ -54,6 +54,10 @@ if selected_view == " Performance Overview":
     # 1. Real-Time Performance Metrics (top)
     st.markdown("###  Real-Time Performance Metrics")
     try:
+        # --- REAL-TIME BALANCE ---
+        balance = get_balance()
+        st.markdown(f"#### 💰 Real-Time Account Balance: ${balance:,.2f}")
+        say(f"Current account balance is {balance:,.2f} dollars")
         metrics = get_real_time_metrics()
         profit_percent = metrics.get("profit_percent", 0.0)
         total_trades = metrics.get("total_trades", 0)
@@ -165,3 +169,9 @@ elif selected_view == " Alerts & Notifications":
 # Footer
 st.markdown("---")
 st.caption(" Powered by Bahati_Legendary_AI_Engine™ — Quantum-Secure. Self-Healing. Federated.")
+
+def launch_dashboard():
+    import streamlit.web.bootstrap
+    import os
+    script_path = os.path.abspath(__file__)
+    streamlit.web.bootstrap.run(script_path, '', [], {})

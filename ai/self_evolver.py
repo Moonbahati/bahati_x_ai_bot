@@ -71,7 +71,7 @@ def evolve_crypto_protocol(*args, **kwargs):
 class SelfEvolver:
     def __init__(self, memory_size=100, learning_rate=0.01, exploration_decay=0.995):
         self.memory = deque(maxlen=memory_size)
-        self.rl_trainer = RLTrainer()
+        self.rl_trainer = RLTrainer(state_size=11, action_size=3)
         self.pattern_memory = PatternMemory()
         self.intent_ai = IntentRecognizerAI()
         self.learning_rate = learning_rate

@@ -11,6 +11,53 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("LegendaryStakeManager")
 
 class StakeManager:
+    def martingale_stake(self, last_stake: float, last_result: float) -> float:
+        """
+        Martingale: Double stake after a loss, reset after a win.
+        """
+        if last_result < 0:
+            return float(min(last_stake * 2, self.capital * self.max_exposure))
+        else:
+            return float(self.min_stake)
+
+    def anti_martingale_stake(self, last_stake: float, last_result: float) -> float:
+        """
+        Anti-Martingale: Increase stake after a win, reset after a loss.
+        """
+        if last_result > 0:
+            return float(min(last_stake * 2, self.capital * self.max_exposure))
+        else:
+            return float(self.min_stake)
+
+    def soros_stake(self, last_stake: float, last_result: float, profit_stack: int = 2) -> float:
+        """
+        Soros/Compound: Stack profits for a set number of rounds, then reset.
+        """
+        if not hasattr(self, '_soros_counter'):
+            self._soros_counter = 0
+        if not hasattr(self, '_soros_base'):
+            self._soros_base = self.min_stake
+        if last_result > 0 and self._soros_counter < profit_stack:
+            self._soros_counter += 1
+            return float(min(last_stake + last_result, self.capital * self.max_exposure))
+        else:
+            self._soros_counter = 0
+            return float(self.min_stake)
+
+    def smart_stake_decision(self, strategy: str, last_stake: float, last_result: float, **kwargs) -> float:
+        """
+        Smart trade management: choose stake based on selected strategy.
+        strategy: 'dynamic', 'martingale', 'anti-martingale', 'soros'
+        """
+        if strategy == 'martingale':
+            return self.martingale_stake(last_stake, last_result)
+        elif strategy == 'anti-martingale':
+            return self.anti_martingale_stake(last_stake, last_result)
+        elif strategy == 'soros':
+            return self.soros_stake(last_stake, last_result, kwargs.get('profit_stack', 2))
+        else:
+            # Default to dynamic AI-based stake
+            return float(self.compute_stake(kwargs.get('signal_strength', 1.0), kwargs.get('recent_prices', [self.capital]), kwargs.get('trade_intent', 'neutral')))
     def __init__(self, initial_capital=10000.0, max_exposure=0.3, min_stake=5.0,
                  emotion_factor=True, volatility_weight=0.2, memory_weight=0.3):
         self.capital = initial_capital
@@ -104,3 +151,15 @@ class StakeManager:
 def get_current_risk_profile(*args, **kwargs):
     # TODO: Implement risk profile logic
     return {"risk_level": 0.05}
+
+def simulate_market_impact(stake_amount, asset_symbol):
+    """
+    Dummy market impact simulation for testing stake strategies.
+    Returns a simulated profit or loss (randomized for now).
+    """
+    import random
+    # Simulate win/loss: 50% win, 50% loss, win returns 95% of stake, loss loses all stake
+    if random.random() < 0.5:
+        return stake_amount * 1.95  # win: get stake back + 95% profit
+    else:
+        return 0  # loss: lose all stake

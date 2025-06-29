@@ -1,7 +1,7 @@
 # main.py
 
 import threading
-from core.scalper_ai import LegendaryScalperAI
+from core.scalper_ai import ScalperAI
 from core.strategy_evolver import StrategyEvolver
 from core.federated_agent import FederatedAgent
 from core.ultra_defender_ai import UltraDefender
@@ -28,10 +28,10 @@ from engine.adaptive_segmentation import AdaptiveSegmenter
 
 from gui.dashboard_streamlit import launch_dashboard
 from gui.ai_voice_chat import launch_voice_ai
-from gui.whatsapp_alerts import init_whatsapp_bot
+## from gui.whatsapp_alerts import init_whatsapp_bot  # Removed: module not found
 from gui.voice_output import voice_notify
 from simulator.training_simulator import start_training_simulation
-from simulator.real_time_tester import launch_real_time_testing
+from simulator.real_time_tester import launch_real_time_dashboard
 from simulator.post_launch_lab import run_post_launch_lab
 
 from integrations.api_token_manager import refresh_api_tokens
@@ -58,7 +58,7 @@ def handle_tick(tick_data):
 def init_brain():
     """Initialize core decision-making AI brain"""
     print("🔵 Initializing AI core modules...")
-    ai_brain = LegendaryScalperAI()
+    ai_brain = ScalperAI()
     evolver = StrategyEvolver()
     defender = UltraDefender()
     federation = FederatedAgent()
@@ -66,7 +66,7 @@ def init_brain():
     fraud_ai = FraudDetectionAI()
     segmenter = AdaptiveSegmenter()
     
-    threading.Thread(target=ai_brain.run).start()
+    threading.Thread(target=ai_brain.run_live).start()
     threading.Thread(target=evolver.run).start()
     threading.Thread(target=defender.monitor).start()
     threading.Thread(target=federation.federate).start()
@@ -93,7 +93,7 @@ def init_ui_services():
     print("🟣 Launching GUI & alerts...")
     threading.Thread(target=launch_dashboard).start()
     threading.Thread(target=launch_voice_ai).start()
-    threading.Thread(target=init_whatsapp_bot).start()
+    # threading.Thread(target=init_whatsapp_bot).start()  # Removed: module not found
     threading.Thread(target=init_whatsapp_voice_ai).start()
 
 def init_security():
@@ -115,7 +115,7 @@ def start_simulation_suite():
     """Start full simulator suite"""
     print("🧠 Initializing simulation suite...")
     start_training_simulation()
-    launch_real_time_testing()
+    launch_real_time_dashboard()
     run_post_launch_lab()
 
 def monitor_and_serve():

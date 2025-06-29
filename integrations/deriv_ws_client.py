@@ -9,7 +9,11 @@ import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DERIV_TOKEN = "HtInIuKmiplAINX"  # Replace with your real token
+import os
+# --- SECURITY: Load API key from environment variable ---
+DERIV_TOKEN = os.environ.get("DERIV_TOKEN")
+if not DERIV_TOKEN:
+    raise RuntimeError("DERIV_TOKEN environment variable not set. Please set it before running the bot.")
 
 def on_message(ws, message):
     data = json.loads(message)
@@ -75,13 +79,18 @@ def get_balance():
     data = json.loads(response)
     ws.close()
     print("DEBUG: Balance response:", data)
+    # Check for error in response
+    if "error" in data:
+        logger.error(f"Error in balance response: {data['error']}")
+        return 0.0  # or handle as appropriate for your app
     # Check for balance in authorize response
     if "authorize" in data and "balance" in data["authorize"]:
         return data["authorize"]["balance"]
     # If you want to support the balance endpoint as well, add:
     if "balance" in data and "balance" in data["balance"]:
         return data["balance"]["balance"]
-    raise ValueError(f"Balance key not found in response: {data}")
+    logger.error(f"Balance key not found in response: {data}")
+    return 0.0  # or handle as appropriate for your app
 
 def get_account_profit_percent():
     starting_balance = 9500.00  # Set your actual starting balance
@@ -126,8 +135,8 @@ def get_win_rate():
         return 0.0
 
 def get_strategy_impacts():
-    # Placeholder for future implementation
-    return {}
+    # TODO: Implement real logic to analyze trade log and summarize by strategy
+    return []
 
 __all__ = [
     "run_in_background",

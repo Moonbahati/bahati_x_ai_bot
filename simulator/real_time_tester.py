@@ -1,13 +1,13 @@
+
+
 from integrations.deriv_ws_client import (
     get_account_profit_percent,
     get_total_trades,
     get_win_rate,
     get_strategy_impacts,
     get_latest_tick,
-    run_in_background,  # <-- Add this line
+    run_in_background,
 )
-import streamlit as st
-from streamlit_autorefresh import st_autorefresh
 
 def get_real_time_metrics():
     return {
@@ -17,17 +17,38 @@ def get_real_time_metrics():
         "strategy_impacts": get_strategy_impacts(),
     }
 
-if "ws_started" not in st.session_state:
-    run_in_background()
-    st.session_state["ws_started"] = True
+def launch_real_time_dashboard():
+    import streamlit as st
+    try:
+        from streamlit_autorefresh import st_autorefresh
+    except ImportError:
+        def st_autorefresh(*args: object, **kwargs: object) -> None:
+            pass  # fallback: do nothing if not available
 
-st_autorefresh(interval=2000, key="datarefresh_realtime")
+    if "ws_started" not in st.session_state:
+        run_in_background()
+        st.session_state["ws_started"] = True
 
-with st.spinner("Loading real-time metrics..."):
-    metrics = get_real_time_metrics()
+    st.title("AI Trading Bot Real-Time Dashboard")
+    st_autorefresh(interval=2000, key="datarefresh_realtime")
 
-tick = get_latest_tick()
-if tick:
-    st.write(tick)
-else:
-    st.info("Waiting for real-time data...")
+    with st.spinner("Loading real-time metrics..."):
+        metrics = get_real_time_metrics()
+
+    st.metric("Profit %", f"{metrics['profit_percent']:.2f}%")
+    st.metric("Total Trades", metrics['total_trades'])
+    st.metric("Win Rate", f"{metrics['win_rate']:.2f}%")
+
+    if metrics["strategy_impacts"]:
+        st.subheader("Strategy Impacts")
+        st.write(metrics["strategy_impacts"])
+
+    tick = get_latest_tick()
+    st.subheader("Latest Tick Data")
+    if tick:
+        st.json(tick)
+    else:
+        st.info("Waiting for real-time data...")
+
+if __name__ == "__main__":
+    launch_real_time_dashboard()

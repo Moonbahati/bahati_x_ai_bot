@@ -1,4 +1,10 @@
+
 # simulator/training_simulator.py
+# --- Add start_training_simulation public function ---
+def start_training_simulation(epochs=30):
+    simulator = TrainingSimulator(epochs=epochs)
+    simulator.simulate()
+    return simulator.get_log()
 
 import json
 import logging
@@ -8,16 +14,16 @@ from core.digit_predictor.ensemble_voter import evaluate_strategy
 from engine.dna_profiler import check_dna_uniqueness
 from engine.adaptive_segmentation import segment_behavior
 from ai.auto_feedback_loop import feedback_evaluator
-from ai.threat_prediction_ai import predict_threats
+from ai.threat_prediction_ai import predict_threat  # Fixed import name
 from ai.pattern_memory import recall_patterns
 from ai.self_evolver import evolve_self, track_change
-from engine.chaos_filter import apply_chaos_theory
+
 from integrations.deriv_ws_client import run_in_background
 from core.scalper_ai import ScalperAI
 from engine.market_analyzer import analyze_market_conditions
 from engine.stake_manager import StakeManager
 from engine.policy_enforcer import enforce_stake_limits
-from engine.dna_profiler import analyze_strategy_behavior
+from engine.dna_profiler import compute_trend_strength, compute_fractal_dimension, compute_entropy, normalize_fingerprint, compute_fingerprint, classify_market_behavior
 from logs.logger_manager import log_trade
 from engine.risk_guardian import RiskGuardian
 
@@ -52,10 +58,10 @@ class TrainingSimulator:
         base_score = evaluate_strategy(strategy_vector)
         dna_score = check_dna_uniqueness(strategy_vector)
         feedback = feedback_evaluator(strategy_vector)
-        threat_prediction = predict_threats(data_point)
+        threat_prediction = predict_threat(data_point)
         segmentation = segment_behavior(data_point)
         pattern_response = recall_patterns(strategy_vector)
-        chaos_resistance = apply_chaos_theory(data_point)
+
 
         intelligence_vector = evolve_self(strategy_vector)
 
@@ -65,8 +71,7 @@ class TrainingSimulator:
             0.20 * feedback +
             0.15 * (1 - threat_prediction.get("risk_score", 0)) +
             0.10 * segmentation.get("confidence", 0) +
-            0.10 * pattern_response.get("resonance", 0.5) +
-            0.05 * chaos_resistance
+            0.10 * pattern_response.get("resonance", 0.5)
         )
 
         return {
@@ -120,7 +125,19 @@ def process_tick(tick):
     enforce_stake_limits(prediction, position_size)
 
     # 5. Analyze strategy behavior
-    strategy_report = analyze_strategy_behavior(scalper_ai.dna)
+    # analyze_strategy_behavior is missing; use a composite analysis instead
+    dna = scalper_ai.dna
+    # Example: compute trend, fractal, entropy, and classification
+    trend = compute_trend_strength(dna)
+    fractal = compute_fractal_dimension(dna)
+    entropy = compute_entropy(dna)
+    classification = classify_market_behavior(dna)
+    strategy_report = {
+        "trend_strength": trend,
+        "fractal_dimension": fractal,
+        "entropy": entropy,
+        "classification": classification
+    }
 
     # 6. Learn from the prediction
     scalper_ai.learn(features, prediction)

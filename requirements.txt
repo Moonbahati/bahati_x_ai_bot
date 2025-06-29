@@ -7,11 +7,17 @@ xgboost
 lightgbm
 
 transformers
+tiktoken
+protobuf
 nltk
 openai
+huggingface-hub
+sentencepiece
 
 streamlit
+streamlit-autorefresh
 pyttsx3
+# System dependency required for pyttsx3 on Linux: espeak or espeak-ng (install via apt)
 SpeechRecognition
 pyaudio
 twilio
