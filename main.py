@@ -36,7 +36,7 @@ from simulator.post_launch_lab import post_launch_feedback_summary
 
 
 from integrations.deriv_connector import DerivConnector
-from integrations.openai_interface import OpenAIService
+from integrations.openai_interface import OpenAIInterface
 from integrations.whatsapp_voicebot_connector import init_whatsapp_voice_ai
 
 from security.signal_scrambler import scramble_signals
@@ -108,7 +108,7 @@ def init_integrations():
     """Initialize all external service connections"""
     print("🔶 Initializing integrations...")
     DerivConnector(api_token="your_token_here")  # Instantiates the connector; no .connect() method needed
-    OpenAIService().verify()
+    OpenAIInterface().verify()
 
 
 def start_simulation_suite():
