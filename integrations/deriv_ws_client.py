@@ -135,8 +135,33 @@ def get_win_rate():
         return 0.0
 
 def get_strategy_impacts():
-    # TODO: Implement real logic to analyze trade log and summarize by strategy
-    return []
+    # Analyze logs/trade_log.csv for strategy impact summary
+    import os
+    import pandas as pd
+    log_path = "logs/trade_log.csv"
+    if not os.path.exists(log_path):
+        return []
+    try:
+        df = pd.read_csv(log_path, header=None, names=["timestamp", "trade", "response"])
+        # For demo: count trades by contract_type (CALL/PUT)
+        def parse_trade(x):
+            try:
+                return json.loads(x) if isinstance(x, str) else {}
+            except Exception:
+                return {}
+        df["trade_json"] = df["trade"].apply(parse_trade)
+        def extract_strategy(t):
+            try:
+                return t.get("parameters", {}).get("contract_type", "UNKNOWN")
+            except Exception:
+                return "UNKNOWN"
+        df["strategy"] = df["trade_json"].apply(extract_strategy)
+        impact = df["strategy"].value_counts().reset_index()
+        impact.columns = ["strategy", "impact"]
+        return impact.to_dict(orient="records")
+    except Exception as e:
+        logger.error(f"Error in get_strategy_impacts: {e}")
+        return []
 
 __all__ = [
     "run_in_background",

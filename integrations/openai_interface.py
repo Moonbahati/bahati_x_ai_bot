@@ -4,7 +4,7 @@ import os
 import openai
 import time
 import json
-from api_token_manager import APITokenManager
+from integrations.api_token_manager import APITokenManager
 from typing import Optional, Dict
 
 # Load OpenAI API Key securely

@@ -32,10 +32,10 @@ from gui.ai_voice_chat import launch_voice_ai
 from gui.voice_output import voice_notify
 from simulator.training_simulator import start_training_simulation
 from simulator.real_time_tester import launch_real_time_dashboard
-from simulator.post_launch_lab import run_post_launch_lab
+from simulator.post_launch_lab import post_launch_feedback_summary
 
-from integrations.api_token_manager import refresh_api_tokens
-from integrations.deriv_connector import DerivConnection
+
+from integrations.deriv_connector import DerivConnector
 from integrations.openai_interface import OpenAIService
 from integrations.whatsapp_voicebot_connector import init_whatsapp_voice_ai
 
@@ -107,16 +107,16 @@ def init_security():
 def init_integrations():
     """Initialize all external service connections"""
     print("🔶 Initializing integrations...")
-    DerivConnection().connect()
+    DerivConnector(api_token="your_token_here")  # Instantiates the connector; no .connect() method needed
     OpenAIService().verify()
-    refresh_api_tokens()
+
 
 def start_simulation_suite():
     """Start full simulator suite"""
     print("🧠 Initializing simulation suite...")
     start_training_simulation()
     launch_real_time_dashboard()
-    run_post_launch_lab()
+    post_launch_feedback_summary()
 
 def monitor_and_serve():
     """Final monitoring and runtime handling"""
